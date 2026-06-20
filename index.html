@@ -123,6 +123,8 @@
     box-shadow:0 0 0 3px rgba(201,255,77,0.15);
   }
   .tum-field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239AABCB'><path d='M5.5 7.5l4.5 4.5 4.5-4.5z'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;}
+  .tum-field select:disabled,
+  .tum-field input:disabled{opacity:.45;cursor:not-allowed;}
   .tum-hint{font-size:11px;color:var(--text-mute);margin-top:5px;}
 
   /* Plan option blocks */
@@ -186,19 +188,17 @@
     border:1.5px solid var(--accent);
     border-radius:var(--radius);
     background:linear-gradient(180deg, rgba(201,255,77,0.09), rgba(201,255,77,0.02));
-    padding:20px 18px;
+    padding:18px 18px 16px;
     margin-bottom:14px;
-    position:relative;
-    overflow:hidden;
   }
-  .tum-ticket::before{
-    content:'';position:absolute;left:0;right:0;bottom:46px;height:0;
-    border-bottom:1.5px dashed rgba(201,255,77,0.35);
-  }
-  .tum-ticket-label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft);font-weight:600;margin-bottom:6px;}
-  .tum-ticket-amount{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:38px;color:var(--accent);line-height:1;}
-  .tum-ticket-amount span{font-size:18px;margin-left:4px;color:var(--accent-dim);}
-  .tum-ticket-breakdown{margin-top:14px;padding-top:14px;font-size:12px;color:var(--text-soft);display:flex;justify-content:space-between;}
+  .tum-ticket-label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft);font-weight:600;margin-bottom:12px;}
+  .tum-ticket-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;color:var(--text-soft);}
+  .tum-ticket-row b{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:var(--text);}
+  .tum-ticket-divider{border-top:1.5px dashed rgba(201,255,77,0.35);margin:6px 0 10px;}
+  .tum-ticket-row-total{align-items:baseline;padding-top:2px;}
+  .tum-ticket-row-total .tum-ticket-total-label{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text);}
+  .tum-ticket-amount{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:32px;color:var(--accent);line-height:1;}
+  .tum-ticket-amount span{font-size:16px;margin-left:3px;color:var(--accent-dim);}
 
   /* Buttons */
   .tum-actions{display:flex;gap:10px;margin:18px 0 30px;flex-wrap:wrap;}
@@ -337,10 +337,12 @@
       </div>
       <div class="tum-field">
         <label for="f-espacio-estado">Estado del espacio</label>
-        <select id="f-espacio-estado">
+        <select id="f-espacio-estado" disabled>
+          <option value="" selected disabled>Selecciona...</option>
           <option value="Regular">Regular</option>
           <option value="Crítico">Crítico</option>
         </select>
+        <div class="tum-hint" id="f-espacio-estado-hint">Ingresa los metros² para habilitar este campo</div>
       </div>
     </div>
 
@@ -454,11 +456,19 @@
 
     <!-- TOTAL TICKET -->
     <div class="tum-ticket">
-      <div class="tum-ticket-label">Precio total del servicio</div>
-      <div class="tum-ticket-amount" id="ticket-total">Bs 0<span>.00</span></div>
-      <div class="tum-ticket-breakdown">
-        <span>Plan elegido: <b id="bk-plan" style="color:var(--text);font-family:'JetBrains Mono',monospace;">Bs 0</b></span>
-        <span>Complementos: <b id="bk-extras" style="color:var(--text);font-family:'JetBrains Mono',monospace;">Bs 0</b></span>
+      <div class="tum-ticket-label">Resumen del servicio</div>
+      <div class="tum-ticket-row">
+        <span>Costo plan elegido</span>
+        <b id="bk-plan">Bs 0</b>
+      </div>
+      <div class="tum-ticket-row">
+        <span>Costo de complementos</span>
+        <b id="bk-extras">Bs 0</b>
+      </div>
+      <div class="tum-ticket-divider"></div>
+      <div class="tum-ticket-row tum-ticket-row-total">
+        <span class="tum-ticket-total-label">Total</span>
+        <span class="tum-ticket-amount" id="ticket-total">Bs 0<span>.00</span></span>
       </div>
     </div>
     </div><!-- /capture-area -->
@@ -534,6 +544,19 @@
     recalc();
   }
 
+  function actualizarHabilitacionEstadoEspacio(){
+    const m = parseFloat(fields.metros.value);
+    const hint = $('f-espacio-estado-hint');
+    if(m > 0){
+      fields.espacioEstado.disabled = false;
+      hint.textContent = '';
+    } else {
+      fields.espacioEstado.disabled = true;
+      fields.espacioEstado.value = '';
+      hint.textContent = 'Ingresa los metros² para habilitar este campo';
+    }
+  }
+
   fields.metros.addEventListener('input', () => {
     const m = parseFloat(fields.metros.value);
     const sug = sugerirTalla(m);
@@ -545,6 +568,7 @@
     } else {
       hint.textContent = '';
     }
+    actualizarHabilitacionEstadoEspacio();
   });
 
   // Actualizar precios cuando cambia la talla manualmente
@@ -628,6 +652,15 @@
     el.addEventListener('change', recalc);
   });
   // opt1Plan y opt2Plan tienen su propio listener que llama recalc vía aplicarPreciosPorTalla
+
+  // Sugerir la opción de plan según el estado del espacio (referencia, el asesor puede cambiarla)
+  fields.espacioEstado.addEventListener('change', () => {
+    if(fields.espacioEstado.value === 'Crítico'){
+      setPlanElegidoOpcion('1');
+    } else if(fields.espacioEstado.value === 'Regular'){
+      setPlanElegidoOpcion('2');
+    }
+  });
 
   // ---------- extras ----------
   const extrasList = $('extras-list');
@@ -750,7 +783,8 @@
     fields.detalle.value = v.detalle || '';
     fields.metros.value = v.metros || '';
     fields.talla.value = v.talla || 'S';
-    fields.espacioEstado.value = v.espacioEstado || 'Regular';
+    fields.espacioEstado.value = v.espacioEstado || '';
+    actualizarHabilitacionEstadoEspacio();
     const o1 = v.opcion1 || {}; const o2 = v.opcion2 || {};
     fields.opt1Plan.value = o1.plan || 'TUM PRO';
     fields.opt1Frecuencia.value = o1.frecuencia || 'Única vez';
@@ -776,7 +810,8 @@
     fields.metros.value = '';
     fields.talla.value = 'S';
     $('f-talla-hint').textContent = '';
-    fields.espacioEstado.value = 'Regular';
+    fields.espacioEstado.value = '';
+    actualizarHabilitacionEstadoEspacio();
     fields.opt1Plan.value = 'TUM PRO';
     fields.opt1Frecuencia.value = 'Única vez';
     fields.opt1Subtotal.value = '';
@@ -1439,6 +1474,7 @@
 
   // ---------- init ----------
   addExtraRow();
+  actualizarHabilitacionEstadoEspacio();
   recalc();
   renderVisitsList('');
 })();
