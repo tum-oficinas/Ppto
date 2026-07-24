@@ -339,13 +339,15 @@
       text-transform: uppercase;
       color: var(--text-muted);
       margin-bottom: 10px;
+      position: relative;
+      z-index: 10;
     }
 
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 16px;
+      margin-top: 24px;
       align-items: stretch;
     }
 
@@ -378,7 +380,7 @@
       background:
         radial-gradient(120% 90% at 50% 0%, rgba(201,255,77,0.10), transparent 60%),
         var(--accent-bg);
-      transform: scale(1.07) translateY(-4px);
+      transform: scale(1.05) translateY(-2px);
       z-index: 5;
       box-shadow:
         0 0 0 1px rgba(201,255,77,0.2),
@@ -524,6 +526,15 @@
       font-weight: 700;
       color: var(--text-primary);
     }
+
+    .plan-reference-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+
 
     .check-dot {
       position: absolute;
@@ -746,15 +757,45 @@
         grid-column: 1 / -1;
         order: -1;
         transform: translateY(-2px);
-        padding-top: 1.7rem;
+        padding-top: 1.9rem;
+        padding-bottom: 1.3rem;
+        animation: selectPop 0.28s cubic-bezier(.34,1.4,.64,1);
       }
+      @keyframes selectPop {
+        from { transform: scale(0.94) translateY(0); opacity: 0.7; }
+        to   { transform: scale(1) translateY(-2px); opacity: 1; }
+      }
+      .plan-card.selected .plan-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 18px;
+        margin-bottom: 14px;
+      }
+      .plan-card.selected .plan-icon svg { width: 34px; height: 34px; }
+      .plan-card.selected .plan-name { font-size: 18px; }
+      .plan-card.selected .recommended-badge {
+        font-size: 11px;
+        padding: 5px 12px;
+        top: -14px;
+      }
+      .plan-card.selected .recommended-badge svg { width: 12px; height: 12px; }
+      .plan-card.selected .check-dot {
+        width: 22px;
+        height: 22px;
+        top: 10px;
+        right: 10px;
+      }
+      .plan-card.selected .check-dot svg { width: 13px; height: 13px; }
       .plans-grid:has(.plan-card.selected) .plan-card:not(.selected) {
         grid-column: span 3;
       }
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-savings,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-sub-label,
-      .plan-card[data-plan="inicial"]:not(.selected) .plan-price-both {
+      .plan-card[data-plan="inicial"]:not(.selected) .plan-price-both,
+      .plan-card[data-plan="inicial"]:not(.selected) .plan-reference-label,
+      .plan-card[data-plan="critico"]:not(.selected) .plan-price-both,
+      .plan-card[data-plan="critico"]:not(.selected) .plan-reference-label {
         display: none !important;
       }
       .plan-name { font-size: 11px; }
@@ -1144,6 +1185,7 @@
           <div class="plan-name">Inicial</div>
           <div class="plan-price" id="price-inicial">—</div>
           <div class="plan-price-both" id="price-inicial-both">Ambos lados: <span id="price-inicial-both-value">—</span></div>
+          <div class="plan-reference-label">Oferta Inicial</div>
         </div>
 
         <div class="plan-card" data-plan="mantenimiento" data-mult="25" onclick="selectPlan(this)">
@@ -1155,8 +1197,8 @@
           <div class="plan-icon"><svg class="icon"><use href="#i-gear"></use></svg></div>
           <div class="plan-name">Mantenimiento</div>
           <div class="plan-price" id="price-mantenimiento">—</div>
-          <div class="plan-sub-label">Suscripción mensual · 1 cara</div>
-          <div class="plan-price-both" id="price-mantenimiento-both">Ambos lados: <span id="price-mantenimiento-both-value">—</span></div>
+          <div class="plan-sub-label" id="price-mantenimiento-sublabel">Suscripción mensual</div>
+          <div class="plan-price-both" id="price-mantenimiento-both"><span id="price-mantenimiento-both-label">Ambos lados</span>: <span id="price-mantenimiento-both-value">—</span></div>
           <div class="plan-savings" id="price-mantenimiento-savings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12l4 4 8-8"/></svg>
             <span>Ahorra vs. limpieza intensiva</span>
@@ -1172,6 +1214,8 @@
           <div class="plan-icon"><svg class="icon"><use href="#i-shield-alert"></use></svg></div>
           <div class="plan-name">Intensivo</div>
           <div class="plan-price" id="price-critico">—</div>
+          <div class="plan-price-both" id="price-critico-both">Ambos lados: <span id="price-critico-both-value">—</span></div>
+          <div class="plan-reference-label">Precio original</div>
         </div>
 
       </div>
@@ -1453,9 +1497,9 @@
         const el = document.getElementById('price-' + key);
         const isMantenimiento = key === 'mantenimiento';
 
-        // Mantenimiento se vende como suscripción mensual: su precio ancla
-        // es siempre en base a 1 cara, sin importar el toggle de arriba.
-        const priceDim = isMantenimiento ? dimension : dim;
+        // El precio principal siempre refleja la selección real del toggle
+        // (1 cara o ambos lados), igual que en las demás tarjetas.
+        const priceDim = dim;
 
         if (priceDim > 0) {
           el.textContent = fmt(priceDim * plan.mult);
@@ -1482,23 +1526,49 @@
           }
         }
 
+        if (key === 'critico') {
+          const criticoBoth = document.getElementById('price-critico-both');
+          if (criticoBoth) {
+            if (!bothSides && dimension > 0) {
+              document.getElementById('price-critico-both-value').textContent = fmt(dimension * 2 * plan.mult);
+              criticoBoth.classList.add('visible');
+            } else {
+              criticoBoth.classList.remove('visible');
+            }
+          }
+        }
+
         if (isMantenimiento) {
           const diffMult = PLANS.critico.mult - PLANS.mantenimiento.mult;
 
+          // El precio principal ya refleja la selección real (1 cara o ambos
+          // lados, vía priceDim = dim). El dato secundario ahora muestra
+          // siempre la alternativa, igual que en las demás tarjetas.
           const both = document.getElementById('price-mantenimiento-both');
-          if (both) {
-            if (bothSides && dimension > 0) {
-              document.getElementById('price-mantenimiento-both-value').textContent = fmt(dim * plan.mult);
+          const bothLabel = document.getElementById('price-mantenimiento-both-label');
+          const sublabel = document.getElementById('price-mantenimiento-sublabel');
+          if (both && bothLabel) {
+            if (dimension > 0) {
+              if (bothSides) {
+                bothLabel.textContent = '1 cara';
+                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * plan.mult);
+              } else {
+                bothLabel.textContent = 'Ambos lados';
+                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * 2 * plan.mult);
+              }
               both.classList.add('visible');
             } else {
               both.classList.remove('visible');
             }
           }
+          if (sublabel) {
+            sublabel.textContent = 'Suscripción mensual · ' + (bothSides ? 'ambos lados' : '1 cara');
+          }
 
           const savings = document.getElementById('price-mantenimiento-savings');
           if (savings) {
             const pct = Math.round((1 - PLANS.mantenimiento.mult / PLANS.critico.mult) * 100);
-            savings.querySelector('span').textContent = 'Ahorra ' + pct + '% (' + fmt(dimension * diffMult) + ') vs. Intensivo';
+            savings.querySelector('span').textContent = 'Ahorra ' + pct + '% (' + fmt(dim * diffMult) + ') vs. Intensivo';
             savings.classList.toggle('visible', dimension > 0);
           }
 
