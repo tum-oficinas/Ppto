@@ -980,9 +980,6 @@
         padding: 5px 11px;
         top: -13px;
       }
-      #plansGrid.plans-grid:has(.plan-card.selected) .plan-card:not(.selected) {
-        grid-column: 1 / -1;
-      }
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-savings,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-sub-label,
@@ -1009,6 +1006,60 @@
       .plan-card.selected .plan-price-both { font-size: 14px; margin-top: 6px; }
       .plan-card.selected .plan-savings { font-size: 13px; margin-top: 10px; }
       .plan-card.selected .plan-savings svg { width: 14px; height: 14px; }
+
+      /* Con 2 tarjetas visibles (Intensivo + Inicial, o Mantenimiento +
+         Intensivo), la selección se marca solo con el resalte de color:
+         ambas quedan del mismo tamaño, lado a lado, sin ocupar el ancho
+         completo ni reordenarse. El "modo protagonista" (grande, ancho
+         completo) es exclusivo de cuando solo una tarjeta está activa,
+         ver #plansGrid.single-visible. */
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected {
+        grid-column: span 1 !important;
+        order: 0 !important;
+        transform: translateY(-2px);
+        padding: 0.75rem 0.5rem;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .plan-icon,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .plan-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .plan-icon svg,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .plan-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .plan-name,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .plan-name {
+        font-size: 11px;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .plan-price,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .plan-price {
+        align-self: stretch;
+        width: auto;
+        min-width: 0;
+        font-size: 16px;
+        padding: 4px 4px;
+        margin-top: 10px;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .first-time-badge,
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .recommended-badge,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .first-time-badge,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .recommended-badge {
+        font-size: 9px;
+        padding: 4px 9px;
+        top: -12px;
+      }
+      #plansGrid.client-new:not(.single-visible) .plan-card.selected .check-dot,
+      #plansGrid.client-recurring:not(.single-visible) .plan-card.selected .check-dot {
+        width: 18px;
+        height: 18px;
+        top: 8px;
+        right: 8px;
+      }
     }
     /* ── Botón compartir (3 acciones) ── */
     .btn-share { flex: 0.9; }
