@@ -983,6 +983,7 @@
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-savings,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-sub-label,
+      .plan-card[data-plan="inicial"]:not(.selected) .plan-savings,
       .plan-card[data-plan="inicial"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="inicial"]:not(.selected) .plan-reference-label,
       .plan-card[data-plan="critico"]:not(.selected) .plan-price-both,
@@ -1474,7 +1475,11 @@
           <div class="plan-name">Inicial</div>
           <div class="plan-side-pill" id="side-inicial">—</div>
           <div class="plan-price" id="price-inicial">—</div>
-          <div class="plan-price-both" id="price-inicial-both">Ambos lados: <span id="price-inicial-both-value">—</span></div>
+          <div class="plan-price-both" id="price-inicial-both"><span id="price-inicial-both-label">Ambos lados</span>: <span id="price-inicial-both-value">—</span></div>
+          <div class="plan-savings" id="price-inicial-savings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12l4 4 8-8"/></svg>
+            <span>Ahorra vs. Intensivo</span>
+          </div>
         </div>
 
         <div class="plan-card" data-plan="mantenimiento" data-mult="25" onclick="selectPlan(this)">
@@ -1910,19 +1915,34 @@
         }
 
         if (key === 'inicial') {
-          // Cuando el toggle está en "1 lado", el precio principal solo cubre
-          // una cara. Mostramos "Ambos lados" como dato secundario para que
-          // el cliente vea el total real de una primera limpieza completa
-          // (si ya está en modo "Ambos lados", el precio principal ya lo
-          // refleja, así que ocultamos el secundario para no repetir el dato).
+          // Precio recíproco: si está en "1 cara" muestra el total en
+          // "Ambos lados" (y viceversa), igual que en Mantenimiento, para
+          // que el cliente vea siempre la otra opción sin cambiar el toggle.
           const inicialBoth = document.getElementById('price-inicial-both');
-          if (inicialBoth) {
-            if (!bothSides && dimension > 0) {
-              document.getElementById('price-inicial-both-value').textContent = fmt(dimension * 2 * plan.mult);
+          const inicialBothLabel = document.getElementById('price-inicial-both-label');
+          if (inicialBoth && inicialBothLabel) {
+            if (dimension > 0) {
+              if (bothSides) {
+                inicialBothLabel.textContent = '1 cara';
+                document.getElementById('price-inicial-both-value').textContent = fmt(dimension * plan.mult);
+              } else {
+                inicialBothLabel.textContent = 'Ambos lados';
+                document.getElementById('price-inicial-both-value').textContent = fmt(dimension * 2 * plan.mult);
+              }
               inicialBoth.classList.add('visible');
             } else {
               inicialBoth.classList.remove('visible');
             }
+          }
+
+          // Ahorro vs. Intensivo: comparación directa al mismo número de
+          // caras, solo como referencia rápida para el vendedor.
+          const inicialSavings = document.getElementById('price-inicial-savings');
+          if (inicialSavings) {
+            const pct = Math.round((1 - PLANS.inicial.mult / PLANS.critico.mult) * 100);
+            const diff = dim * (PLANS.critico.mult - PLANS.inicial.mult);
+            inicialSavings.querySelector('span').textContent = 'Ahorra ' + pct + '% (' + fmt(diff) + ') vs. Intensivo';
+            inicialSavings.classList.toggle('visible', dimension > 0);
           }
         }
 
