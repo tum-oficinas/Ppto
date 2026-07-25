@@ -388,8 +388,12 @@
         0 1px 0 rgba(255,255,255,0.05) inset;
     }
 
-    /* Plan recomendado (Mantenimiento): jerarquia real, no solo un badge */
-    .plan-card[data-plan="mantenimiento"] {
+    /* Jerarquia visual destacada: qué tarjeta se resalta depende del tipo de
+       cliente (ver #plansGrid.client-new / .client-recurring más abajo).
+       Cliente nuevo -> se resalta la Oferta inicial (es lo que debe vender).
+       Cliente recurrente -> se resalta Mantenimiento (es lo recomendado). */
+    #plansGrid.client-recurring .plan-card[data-plan="mantenimiento"],
+    #plansGrid.client-new .plan-card[data-plan="inicial"] {
       border: 1.5px solid var(--accent);
       background:
         radial-gradient(120% 100% at 50% 0%, rgba(201,255,77,0.14), transparent 65%),
@@ -400,10 +404,132 @@
         0 1px 0 rgba(255,255,255,0.03) inset;
       z-index: 1;
     }
-    .plan-card[data-plan="mantenimiento"].selected {
+    .plan-card[data-plan="mantenimiento"].selected,
+    .plan-card[data-plan="inicial"].selected {
       z-index: 6;
     }
-    .recommended-badge {
+
+    /* El badge "Recomendado" solo tiene sentido para quien ya recibió el
+       servicio; para cliente nuevo, Mantenimiento ni siquiera es visible. */
+    #plansGrid.client-new .plan-card[data-plan="mantenimiento"] .recommended-badge {
+      display: none;
+    }
+
+    /* Cliente nuevo: Mantenimiento no aplica todavía (es para quien ya
+       recibió el servicio), así que se oculta y solo quedan las 2 tarjetas
+       que sí corresponden ofrecer. */
+    #plansGrid.client-new .plan-card[data-plan="mantenimiento"] {
+      display: none;
+    }
+    /* Cliente recurrente: Inicial ya no aplica (no es su primera limpieza),
+       así que se oculta y solo quedan Mantenimiento (recomendado) e
+       Intensivo (activable para comparar el precio real). */
+    #plansGrid.client-recurring .plan-card[data-plan="inicial"] {
+      display: none;
+    }
+    /* Cualquier tarjeta puede ocultarse/mostrarse a voluntad con los chips
+       de arriba, para enfocar al cliente en una sola cosa a la vez. */
+    .plan-card.toggled-hidden {
+      display: none !important;
+    }
+    #plansGrid.client-new,
+    #plansGrid.client-recurring {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    #plansGrid.single-visible {
+      grid-template-columns: 1fr;
+    }
+    #plansGrid.single-visible .plan-card {
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.1rem 1.75rem 1.9rem;
+    }
+    #plansGrid.single-visible .plan-card .plan-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    #plansGrid.single-visible .plan-card .plan-icon svg {
+      width: 36px;
+      height: 36px;
+    }
+    #plansGrid.single-visible .plan-card .plan-name {
+      font-size: 22px;
+    }
+    #plansGrid.single-visible .plan-card .plan-side-pill {
+      font-size: 13px;
+      padding: 5px 15px;
+      margin-top: 10px;
+    }
+    #plansGrid.single-visible .plan-card .plan-price {
+      font-size: 34px;
+      padding: 14px 22px;
+      margin-top: 18px;
+    }
+    #plansGrid.single-visible .plan-card .plan-reference-label {
+      font-size: 13px;
+      margin-top: 9px;
+    }
+    #plansGrid.single-visible .plan-card .first-time-badge,
+    #plansGrid.single-visible .plan-card .recommended-badge {
+      font-size: 11px;
+      padding: 5px 12px;
+      top: -14px;
+    }
+    #plansGrid.single-visible .plan-card .first-time-badge svg,
+    #plansGrid.single-visible .plan-card .recommended-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+
+    .offer-toggle-row {
+      display: none;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .offer-toggle-row.visible {
+      display: flex;
+    }
+    .offer-toggle-chip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .offer-toggle-chip svg { width: 14px; height: 14px; }
+    .offer-toggle-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent-text);
+    }
+    .offer-toggle-chip:active { transform: scale(0.97); }
+
+    /* Orden visual de las tarjetas según el tipo de cliente. Cliente nuevo:
+       ancla con el valor completo (Intensivo), explica Mantenimiento, y
+       cierra con la Oferta inicial. Cliente recurrente: Mantenimiento
+       primero, ya que es la opción a vender. */
+    #plansGrid.client-new .plan-card[data-plan="critico"] { order: 1; }
+    #plansGrid.client-new .plan-card[data-plan="mantenimiento"] { order: 2; }
+    #plansGrid.client-new .plan-card[data-plan="inicial"] { order: 3; }
+    #plansGrid.client-recurring .plan-card[data-plan="mantenimiento"] { order: 1; }
+    #plansGrid.client-recurring .plan-card[data-plan="critico"] { order: 2; }
+    #plansGrid.client-recurring .plan-card[data-plan="inicial"] { order: 3; }
+    .recommended-badge,
+    .first-time-badge {
       position: absolute;
       top: -12px;
       left: 50%;
@@ -423,7 +549,12 @@
       box-shadow: 0 3px 10px rgba(201,255,77,0.45), 0 0 0 3px var(--bg);
       white-space: nowrap;
     }
-    .recommended-badge svg { width: 10px; height: 10px; }
+    .recommended-badge svg, .first-time-badge svg { width: 10px; height: 10px; }
+    /* El badge de primera vez solo aplica a quien nunca recibió el servicio;
+       para cliente recurrente, la tarjeta Inicial ya no es "su primera vez". */
+    #plansGrid.client-recurring .plan-card[data-plan="inicial"] .first-time-badge {
+      display: none;
+    }
     .plan-savings {
       font-size: 10px;
       font-weight: 600;
@@ -532,6 +663,22 @@
       color: var(--text-muted);
       margin-top: 5px;
       font-style: italic;
+    }
+
+    /* Indicador de "1 cara" / "Ambos lados ×2": lo que realmente cambia el
+       precio mostrado, así que va directo en la tarjeta, sin ambigüedad. */
+    .plan-side-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 10px;
+      margin-top: 6px;
     }
 
 
@@ -755,7 +902,7 @@
       .plan-card { grid-column: span 2; padding: 0.75rem 0.5rem; }
       .plan-card.selected {
         grid-column: 1 / -1;
-        order: -1;
+        order: -1 !important;
         transform: translateY(-2px);
         padding-top: 1.9rem;
         padding-bottom: 1.3rem;
@@ -788,6 +935,53 @@
       .plan-card.selected .check-dot svg { width: 13px; height: 13px; }
       .plans-grid:has(.plan-card.selected) .plan-card:not(.selected) {
         grid-column: span 3;
+      }
+      #plansGrid.client-new,
+      #plansGrid.client-recurring {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      #plansGrid.client-new .plan-card,
+      #plansGrid.client-recurring .plan-card {
+        grid-column: span 1;
+      }
+      #plansGrid.single-visible {
+        grid-template-columns: 1fr;
+      }
+      #plansGrid.single-visible .plan-card {
+        grid-column: 1 / -1;
+        padding: 1.9rem 1.5rem 1.7rem;
+      }
+      #plansGrid.single-visible .plan-card .plan-icon {
+        width: 66px;
+        height: 66px;
+        border-radius: 18px;
+        margin-bottom: 14px;
+      }
+      #plansGrid.single-visible .plan-card .plan-icon svg {
+        width: 32px;
+        height: 32px;
+      }
+      #plansGrid.single-visible .plan-card .plan-name {
+        font-size: 19px;
+      }
+      #plansGrid.single-visible .plan-card .plan-side-pill {
+        font-size: 12.5px;
+        padding: 4px 14px;
+        margin-top: 9px;
+      }
+      #plansGrid.single-visible .plan-card .plan-price {
+        font-size: 29px;
+        padding: 12px 20px;
+        margin-top: 16px;
+      }
+      #plansGrid.single-visible .plan-card .first-time-badge,
+      #plansGrid.single-visible .plan-card .recommended-badge {
+        font-size: 10.5px;
+        padding: 5px 11px;
+        top: -13px;
+      }
+      #plansGrid.plans-grid:has(.plan-card.selected) .plan-card:not(.selected) {
+        grid-column: 1 / -1;
       }
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-savings,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-both,
@@ -961,6 +1155,13 @@
 <body>
   <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
     <defs>
+      <symbol id="i-user" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 24 24">
+        <path d="M12 3l2.6 5.9 6.4.6-4.8 4.2 1.4 6.3L12 16.9 6.4 20l1.4-6.3L3 9.5l6.4-.6L12 3z"/>
+      </symbol>
       <symbol id="i-ruler" viewBox="0 0 24 24">
         <path d="M3 8h18v8H3z"/>
         <path d="M7 8v3M11 8v3M15 8v3M19 8v3"/>
@@ -1126,6 +1327,23 @@
       <span>Este es un presupuesto preparado especialmente para ti.</span>
     </div>
 
+    <!-- Tipo de cliente: define el orden de los planes y qué oferta se destaca -->
+    <div class="card" id="clientTypeCard">
+      <div class="field-label">
+        <svg class="icon"><use href="#i-user"></use></svg> Tipo de cliente
+      </div>
+      <div class="sides-segment" role="group" aria-label="Tipo de cliente">
+        <button type="button" class="seg-btn active" id="segClientNew" onclick="setClientType('nuevo')">
+          Cliente nuevo
+          <svg class="icon seg-check"><use href="#i-check"></use></svg>
+        </button>
+        <button type="button" class="seg-btn" id="segClientRecurring" onclick="setClientType('recurrente')">
+          Cliente recurrente
+          <svg class="icon seg-check"><use href="#i-check"></use></svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Dimensión input -->
     <div class="card" id="dimCard">
       <div class="field-label">
@@ -1177,15 +1395,35 @@
     <!-- Planes -->
     <div class="card" id="plansCard">
       <div class="section-title">Elige un plan</div>
-      <div class="plans-grid">
+      <div class="offer-toggle-row" id="offerToggleRow">
+        <button type="button" class="offer-toggle-chip active" data-plan="critico" onclick="toggleCardVisibility('critico')">
+          <svg class="icon"><use href="#i-shield-alert"></use></svg> Intensivo
+        </button>
+        <button type="button" class="offer-toggle-chip" data-plan="inicial" onclick="toggleCardVisibility('inicial')">
+          <svg class="icon"><use href="#i-droplet"></use></svg> Oferta inicial
+        </button>
+      </div>
+      <div class="offer-toggle-row" id="offerToggleRowRecurring">
+        <button type="button" class="offer-toggle-chip active" data-plan="mantenimiento" onclick="toggleCardVisibility('mantenimiento')">
+          <svg class="icon"><use href="#i-gear"></use></svg> Mantenimiento
+        </button>
+        <button type="button" class="offer-toggle-chip" data-plan="critico" onclick="toggleCardVisibility('critico')">
+          <svg class="icon"><use href="#i-shield-alert"></use></svg> Intensivo
+        </button>
+      </div>
+      <div class="plans-grid" id="plansGrid">
 
         <div class="plan-card" data-plan="inicial" data-mult="20" onclick="selectPlan(this)">
+          <div class="first-time-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8L5.8 21l1.6-7L2 9.2l7.1-.6L12 2z"/></svg>
+            Oferta primera vez
+          </div>
           <div class="check-dot"><svg class="icon"><use href="#i-check"></use></svg></div>
           <div class="plan-icon"><svg class="icon"><use href="#i-droplet"></use></svg></div>
           <div class="plan-name">Inicial</div>
+          <div class="plan-side-pill" id="side-inicial">—</div>
           <div class="plan-price" id="price-inicial">—</div>
           <div class="plan-price-both" id="price-inicial-both">Ambos lados: <span id="price-inicial-both-value">—</span></div>
-          <div class="plan-reference-label">Oferta Inicial</div>
         </div>
 
         <div class="plan-card" data-plan="mantenimiento" data-mult="25" onclick="selectPlan(this)">
@@ -1213,6 +1451,7 @@
           <div class="check-dot"><svg class="icon"><use href="#i-check"></use></svg></div>
           <div class="plan-icon"><svg class="icon"><use href="#i-shield-alert"></use></svg></div>
           <div class="plan-name">Intensivo</div>
+          <div class="plan-side-pill" id="side-critico">—</div>
           <div class="plan-price" id="price-critico">—</div>
           <div class="plan-price-both" id="price-critico-both">Ambos lados: <span id="price-critico-both-value">—</span></div>
           <div class="plan-reference-label">Precio original</div>
@@ -1336,6 +1575,104 @@
     let dimension = 0;
     let bothSides = false;
     let isClientView = false;
+    let clientType = 'nuevo';
+
+    // Los 2 planes que se pueden activar/desactivar entre sí, según el tipo
+    // de cliente: nuevo compara Intensivo vs. Oferta inicial; recurrente
+    // compara Mantenimiento (recomendado) vs. Intensivo (precio real).
+    function getTogglePlans() {
+      return clientType === 'nuevo' ? ['critico', 'inicial'] : ['mantenimiento', 'critico'];
+    }
+
+    /* ══════════ Tipo de cliente (reordena y resalta los planes) ══════════ */
+    function setClientType(type) {
+      clientType = type;
+      const grid = document.getElementById('plansGrid');
+      grid.classList.toggle('client-new', type === 'nuevo');
+      grid.classList.toggle('client-recurring', type === 'recurrente');
+      document.getElementById('segClientNew').classList.toggle('active', type === 'nuevo');
+      document.getElementById('segClientRecurring').classList.toggle('active', type === 'recurrente');
+      document.getElementById('offerToggleRow').classList.toggle('visible', type === 'nuevo');
+      document.getElementById('offerToggleRowRecurring').classList.toggle('visible', type === 'recurrente');
+
+      if (type === 'nuevo') {
+        // Estado inicial de cliente nuevo: solo Intensivo a la vista, para
+        // anclar el valor completo antes de mostrar la oferta.
+        setCardHidden('critico', false);
+        setCardHidden('inicial', true);
+      } else {
+        // Estado inicial de cliente recurrente: solo Mantenimiento a la
+        // vista (es lo recomendado); Intensivo se activa si el cliente
+        // quiere comparar contra el precio real.
+        setCardHidden('mantenimiento', false);
+        setCardHidden('critico', true);
+      }
+
+      // Mantenimiento queda oculto para cliente nuevo, e Inicial queda
+      // oculto para cliente recurrente; si el plan elegido era ese, se
+      // deselecciona para no dejar una tarjeta invisible marcada como activa.
+      const permanentlyHidden = type === 'nuevo' ? 'mantenimiento' : 'inicial';
+      if (selectedPlan === permanentlyHidden) {
+        selectedPlan = null;
+        document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+        updateResult();
+      }
+    }
+
+    // Muestra u oculta una tarjeta específica y actualiza su(s) chip(s) — un
+    // plan puede tener un chip en cada fila de toggles (nuevo/recurrente),
+    // así que se actualizan todos los que existan. Si la tarjeta que se
+    // oculta estaba seleccionada, se deselecciona. Se puede repetir las
+    // veces que haga falta durante la conversación, en cualquier orden.
+    function setCardHidden(plan, hidden) {
+      const grid = document.getElementById('plansGrid');
+      const card = grid.querySelector('.plan-card[data-plan="' + plan + '"]');
+      const chips = document.querySelectorAll('.offer-toggle-chip[data-plan="' + plan + '"]');
+      if (!card) return;
+
+      card.classList.toggle('toggled-hidden', hidden);
+      chips.forEach(chip => chip.classList.toggle('active', !hidden));
+
+      if (hidden && selectedPlan === plan) {
+        selectedPlan = null;
+        card.classList.remove('selected');
+        updateResult();
+      }
+      updatePlansLayout();
+    }
+
+    function toggleCardVisibility(plan) {
+      const grid = document.getElementById('plansGrid');
+      const card = grid.querySelector('.plan-card[data-plan="' + plan + '"]');
+      if (!card) return;
+      const isHidden = card.classList.contains('toggled-hidden');
+
+      if (!isHidden) {
+        // No se permite ocultar la única tarjeta visible: siempre debe
+        // quedar al menos una opción a la vista del cliente.
+        const stillVisible = getTogglePlans().filter(p => {
+          const c = grid.querySelector('.plan-card[data-plan="' + p + '"]');
+          return c && !c.classList.contains('toggled-hidden');
+        });
+        if (stillVisible.length <= 1) {
+          showToast('Debe quedar al menos una tarjeta visible');
+          return;
+        }
+      }
+      setCardHidden(plan, !isHidden);
+    }
+
+    // Ajusta el layout (1 columna centrada si solo hay una tarjeta visible,
+    // 2 columnas si hay dos) tanto para cliente nuevo como recurrente.
+    function updatePlansLayout() {
+      const grid = document.getElementById('plansGrid');
+      if (!grid.classList.contains('client-new') && !grid.classList.contains('client-recurring')) return;
+      const visibleCount = getTogglePlans().filter(p => {
+        const c = grid.querySelector('.plan-card[data-plan="' + p + '"]');
+        return c && !c.classList.contains('toggled-hidden');
+      }).length;
+      grid.classList.toggle('single-visible', visibleCount === 1);
+    }
 
     const measuresList = document.getElementById('measuresList');
     const segOne   = document.getElementById('segOne');
@@ -1507,6 +1844,18 @@
         } else {
           el.textContent = '—';
           el.classList.remove('active');
+        }
+
+        if (key === 'inicial' || key === 'critico') {
+          // El precio principal cambia según "1 cara" o "Ambos lados"; este
+          // indicador deja explícito a cuál corresponde, sin que el vendedor
+          // tenga que explicarlo aparte.
+          const sidePill = document.getElementById('side-' + key);
+          if (sidePill) {
+            sidePill.textContent = dimension > 0
+              ? (bothSides ? 'Ambos lados ×2' : '1 cara')
+              : '—';
+          }
         }
 
         if (key === 'inicial') {
@@ -1893,6 +2242,7 @@
       selectPlanByKey(data.p);
 
       // Ocultar controles de edición: el cliente solo debe ver su cotización
+      document.getElementById('clientTypeCard').style.display = 'none';
       document.getElementById('dimCard').style.display = 'none';
       document.getElementById('plansCard').style.display = 'none';
       document.getElementById('clientBanner').style.display = 'flex';
@@ -1924,6 +2274,7 @@
       }
     }
 
+    setClientType('nuevo');
     initFromUrl();
   </script>
 </body>
