@@ -7,8 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -438,12 +436,14 @@
     }
     #plansGrid.single-visible {
       grid-template-columns: 1fr;
+      margin-top: 8px;
     }
     #plansGrid.single-visible .plan-card {
       max-width: 400px;
       width: 100%;
       margin: 0 auto;
       padding: 2.1rem 1.75rem 1.9rem;
+      transform-origin: center top;
     }
     #plansGrid.single-visible .plan-card .plan-icon {
       width: 72px;
@@ -467,6 +467,26 @@
       font-size: 34px;
       padding: 14px 22px;
       margin-top: 18px;
+    }
+    #plansGrid.single-visible .plan-card .freq-selector {
+      max-width: 320px;
+      margin-top: 16px;
+    }
+    #plansGrid.single-visible .plan-card .freq-label {
+      font-size: 11px;
+      text-align: center;
+    }
+    #plansGrid.single-visible .plan-card .freq-chip {
+      padding: 9px 4px;
+    }
+    #plansGrid.single-visible .plan-card .freq-chip .freq-name {
+      font-size: 12.5px;
+    }
+    #plansGrid.single-visible .plan-card .freq-chip .freq-discount {
+      font-size: 12px;
+    }
+    #plansGrid.single-visible .plan-card .plan-price-original {
+      font-size: 15px;
     }
     #plansGrid.single-visible .plan-card .plan-reference-label {
       font-size: 13px;
@@ -657,6 +677,74 @@
       font-weight: 700;
       color: var(--text-primary);
     }
+
+    /* ── Frecuencia de servicio (solo Mantenimiento): elegir Mensual /
+       Quincenal / Semanal aplica un descuento distinto a la suscripción,
+       para incentivar visitas más frecuentes con un ahorro más atractivo. ── */
+    .freq-selector {
+      width: 100%;
+      margin-top: 10px;
+      text-align: left;
+    }
+    .freq-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .freq-options {
+      display: flex;
+      gap: 5px;
+    }
+    .freq-chip {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding: 6px 3px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text-secondary);
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .freq-chip:active { transform: scale(0.95); }
+    .freq-chip .freq-name {
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .freq-chip .freq-discount {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .freq-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent-text);
+    }
+    .freq-chip.active .freq-discount { color: var(--accent-text); }
+
+    .plan-price-original {
+      display: none;
+      align-self: stretch;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--danger);
+      margin-top: 10px;
+      text-align: center;
+    }
+    .plan-price-original.visible { display: block; }
 
     .plan-reference-label {
       font-size: 10.5px;
@@ -983,6 +1071,8 @@
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-savings,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-sub-label,
+      .plan-card[data-plan="mantenimiento"]:not(.selected) .freq-selector,
+      .plan-card[data-plan="mantenimiento"]:not(.selected) .plan-price-original,
       .plan-card[data-plan="inicial"]:not(.selected) .plan-savings,
       .plan-card[data-plan="inicial"]:not(.selected) .plan-price-both,
       .plan-card[data-plan="inicial"]:not(.selected) .plan-reference-label,
@@ -1007,6 +1097,10 @@
       .plan-card.selected .plan-price-both { font-size: 14px; margin-top: 6px; }
       .plan-card.selected .plan-savings { font-size: 13px; margin-top: 10px; }
       .plan-card.selected .plan-savings svg { width: 14px; height: 14px; }
+      .plan-card.selected .freq-label { font-size: 11px; }
+      .plan-card.selected .freq-chip .freq-name { font-size: 12.5px; }
+      .plan-card.selected .freq-chip .freq-discount { font-size: 12px; }
+      .plan-card.selected .plan-price-original { font-size: 14px; margin-top: 12px; }
 
       /* Con 2 tarjetas visibles (Intensivo + Inicial, o Mantenimiento +
          Intensivo), la selección se marca solo con el resalte de color:
@@ -1482,7 +1576,7 @@
           </div>
         </div>
 
-        <div class="plan-card" data-plan="mantenimiento" data-mult="25" onclick="selectPlan(this)">
+        <div class="plan-card" data-plan="mantenimiento" data-mult="20" onclick="selectPlan(this)">
           <div class="recommended-badge">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8L5.8 21l1.6-7L2 9.2l7.1-.6L12 2z"/></svg>
             Recomendado
@@ -1490,9 +1584,30 @@
           <div class="check-dot"><svg class="icon"><use href="#i-check"></use></svg></div>
           <div class="plan-icon"><svg class="icon"><use href="#i-gear"></use></svg></div>
           <div class="plan-name">Mantenimiento</div>
+
+          <div class="freq-selector" onclick="event.stopPropagation()">
+            <div class="freq-label">Frecuencia del servicio</div>
+            <div class="freq-options">
+              <button type="button" class="freq-chip" data-freq="mensual" onclick="selectFrequency('mensual')">
+                <span class="freq-name">Mensual</span><span class="freq-discount">-5%</span>
+              </button>
+              <button type="button" class="freq-chip" data-freq="quincenal" onclick="selectFrequency('quincenal')">
+                <span class="freq-name">Quincenal</span><span class="freq-discount">-8%</span>
+              </button>
+              <button type="button" class="freq-chip" data-freq="semanal" onclick="selectFrequency('semanal')">
+                <span class="freq-name">Semanal</span><span class="freq-discount">-10%</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="plan-price-original" id="price-mantenimiento-original">—</div>
           <div class="plan-price" id="price-mantenimiento">—</div>
           <div class="plan-sub-label" id="price-mantenimiento-sublabel">Suscripción mensual</div>
           <div class="plan-price-both" id="price-mantenimiento-both"><span id="price-mantenimiento-both-label">Ambos lados</span>: <span id="price-mantenimiento-both-value">—</span></div>
+          <div class="plan-savings" id="price-mantenimiento-freq-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12l4 4 8-8"/></svg>
+            <span>Ahorras con esta frecuencia</span>
+          </div>
           <div class="plan-savings" id="price-mantenimiento-savings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12l4 4 8-8"/></svg>
             <span>Ahorra vs. limpieza intensiva</span>
@@ -1614,7 +1729,7 @@
         alertText: 'Pensada para conocer nuestro servicio antes de definir un plan continuo. Tarifa promocional, válida una sola vez por cliente.'
       },
       mantenimiento: {
-        label: 'Servicio periódico', mult: 25, icon: 'ti-tool',
+        label: 'Servicio periódico', mult: 20, icon: 'ti-tool',
         alertIcon: 'i-calendar-check',
         alertTitle: 'Servicio periódico',
         alertText: 'Para negocios que conservan su escaparate impecable mediante visitas programadas. Tarifa vigente bajo contrato o suscripción mensual.'
@@ -1627,6 +1742,15 @@
       }
     };
 
+    // Descuento por frecuencia, exclusivo del plan Mantenimiento: mientras
+    // más seguido visita el cliente, mayor el ahorro, como incentivo comercial.
+    const MANT_FREQS = {
+      mensual:   { label: 'Mensual',   discount: 0.05 },
+      quincenal: { label: 'Quincenal', discount: 0.08 },
+      semanal:   { label: 'Semanal',   discount: 0.10 }
+    };
+
+    let selectedFrequency = null;
     let selectedPlan = null;
     let dimension = 0;
     let bothSides = false;
@@ -1869,8 +1993,54 @@
       return dimension * (bothSides ? 2 : 1);
     }
 
+    /* ══════════ Carga perezosa de librerías externas ══════════
+       QRCode.js y html2canvas solo se descargan la primera vez que el
+       vendedor realmente usa "Generar QR" o "Capturar imagen", en vez de
+       bloquear la carga inicial de la página para todos los casos donde
+       nunca se usan. Cada script se descarga una sola vez y se reutiliza. */
+    const _loadedScripts = {};
+    function loadScriptOnce(src) {
+      if (_loadedScripts[src]) return _loadedScripts[src];
+      _loadedScripts[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('No se pudo cargar ' + src));
+        document.head.appendChild(s);
+      });
+      return _loadedScripts[src];
+    }
+    function ensureQRCode() {
+      return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
+    }
+    function ensureHtml2Canvas() {
+      return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    }
+
     function fmt(n) {
       return 'Bs. ' + Math.round(n).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // Precio total de un plan sobre una dimensión dada, aplicando el
+    // descuento por frecuencia solo cuando el plan es Mantenimiento.
+    function planTotal(planKey, dim) {
+      const plan = PLANS[planKey];
+      const base = dim * plan.mult;
+      if (planKey === 'mantenimiento' && selectedFrequency && MANT_FREQS[selectedFrequency]) {
+        return base * (1 - MANT_FREQS[selectedFrequency].discount);
+      }
+      return base;
+    }
+
+    function selectFrequency(key) {
+      // Toggle: si ya estaba activa, se desactiva y vuelve al precio base
+      // sin descuento. Si estaba inactiva (o era otra), se activa esta.
+      selectedFrequency = (selectedFrequency === key) ? null : key;
+      document.querySelectorAll('.freq-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.freq === selectedFrequency);
+      });
+      updatePrices();
+      updateResult();
     }
 
     function updateEffectiveHint() {
@@ -1889,13 +2059,17 @@
       Object.entries(PLANS).forEach(([key, plan]) => {
         const el = document.getElementById('price-' + key);
         const isMantenimiento = key === 'mantenimiento';
+        const freq = selectedFrequency ? MANT_FREQS[selectedFrequency] : null;
+        const discount = (isMantenimiento && freq) ? freq.discount : 0;
 
         // El precio principal siempre refleja la selección real del toggle
         // (1 cara o ambos lados), igual que en las demás tarjetas.
         const priceDim = dim;
+        const baseAmount = priceDim * plan.mult;
+        const finalAmount = baseAmount * (1 - discount);
 
         if (priceDim > 0) {
-          el.textContent = fmt(priceDim * plan.mult);
+          el.textContent = fmt(finalAmount);
           el.classList.add('active');
         } else {
           el.textContent = '—';
@@ -1959,11 +2133,22 @@
         }
 
         if (isMantenimiento) {
-          const diffMult = PLANS.critico.mult - PLANS.mantenimiento.mult;
+          // Precio de referencia (sin descuento) tachado arriba del precio
+          // final, para que el ahorro por frecuencia se note a simple vista.
+          const originalEl = document.getElementById('price-mantenimiento-original');
+          if (originalEl) {
+            if (dimension > 0 && discount > 0) {
+              originalEl.textContent = fmt(baseAmount);
+              originalEl.classList.add('visible');
+            } else {
+              originalEl.classList.remove('visible');
+            }
+          }
 
           // El precio principal ya refleja la selección real (1 cara o ambos
-          // lados, vía priceDim = dim). El dato secundario ahora muestra
-          // siempre la alternativa, igual que en las demás tarjetas.
+          // lados, vía priceDim = dim) y el descuento por frecuencia. El dato
+          // secundario ahora muestra siempre la alternativa, igual que en
+          // las demás tarjetas.
           const both = document.getElementById('price-mantenimiento-both');
           const bothLabel = document.getElementById('price-mantenimiento-both-label');
           const sublabel = document.getElementById('price-mantenimiento-sublabel');
@@ -1971,10 +2156,10 @@
             if (dimension > 0) {
               if (bothSides) {
                 bothLabel.textContent = '1 cara';
-                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * plan.mult);
+                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * plan.mult * (1 - discount));
               } else {
                 bothLabel.textContent = 'Ambos lados';
-                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * 2 * plan.mult);
+                document.getElementById('price-mantenimiento-both-value').textContent = fmt(dimension * 2 * plan.mult * (1 - discount));
               }
               both.classList.add('visible');
             } else {
@@ -1982,13 +2167,29 @@
             }
           }
           if (sublabel) {
-            sublabel.textContent = 'Suscripción mensual · ' + (bothSides ? 'ambos lados' : '1 cara');
+            const freqText = freq ? freq.label.toLowerCase() : 'mensual';
+            sublabel.textContent = 'Suscripción ' + freqText + ' · ' + (bothSides ? 'ambos lados' : '1 cara');
+          }
+
+          // Ahorro propio de elegir esta frecuencia (vs. el precio base sin
+          // descuento), el gancho comercial principal de esta sección.
+          const freqNote = document.getElementById('price-mantenimiento-freq-note');
+          if (freqNote) {
+            if (dimension > 0 && discount > 0) {
+              const diffFreq = baseAmount - finalAmount;
+              freqNote.querySelector('span').textContent = 'Ahorras ' + fmt(diffFreq) + ' (' + Math.round(discount * 100) + '%) por frecuencia ' + freq.label;
+              freqNote.classList.add('visible');
+            } else {
+              freqNote.classList.remove('visible');
+            }
           }
 
           const savings = document.getElementById('price-mantenimiento-savings');
           if (savings) {
-            const pct = Math.round((1 - PLANS.mantenimiento.mult / PLANS.critico.mult) * 100);
-            savings.querySelector('span').textContent = 'Ahorra ' + pct + '% (' + fmt(dim * diffMult) + ') vs. Intensivo';
+            const criticoPrice = dim * PLANS.critico.mult;
+            const pct = criticoPrice > 0 ? Math.round((1 - finalAmount / criticoPrice) * 100) : 0;
+            const diff = criticoPrice - finalAmount;
+            savings.querySelector('span').textContent = 'Ahorra ' + pct + '% (' + fmt(diff) + ') vs. Intensivo';
             savings.classList.toggle('visible', dimension > 0);
           }
 
@@ -1998,7 +2199,7 @@
           const savingsInicial = document.getElementById('price-mantenimiento-savings-inicial');
           if (savingsInicial) {
             const inicialPrice = dim * PLANS.inicial.mult;
-            const mantenimientoPrice = dimension * plan.mult;
+            const mantenimientoPrice = dimension * plan.mult * (1 - discount);
             if (bothSides && dimension > 0 && mantenimientoPrice < inicialPrice) {
               const pctInicial = Math.round((1 - mantenimientoPrice / inicialPrice) * 100);
               savingsInicial.querySelector('span').textContent = 'Ahorra ' + pctInicial + '% (' + fmt(inicialPrice - mantenimientoPrice) + ') vs. Inicial';
@@ -2026,9 +2227,10 @@
       if (dimension > 0 && selectedPlan) {
         const plan  = PLANS[selectedPlan];
         const dim   = effectiveDimension();
-        const total = dim * plan.mult;
+        const total = planTotal(selectedPlan, dim);
 
-        document.getElementById('resBadge').textContent   = 'Plan ' + plan.label;
+        document.getElementById('resBadge').textContent   = 'Plan ' + plan.label
+          + (selectedPlan === 'mantenimiento' && selectedFrequency ? ' · ' + MANT_FREQS[selectedFrequency].label : '');
         document.getElementById('resDim').textContent      = bothSides
           ? dimension.toLocaleString('es-BO') + ' m² × 2 = ' + dim.toLocaleString('es-BO') + ' m²'
           : dimension.toLocaleString('es-BO') + ' m²';
@@ -2051,7 +2253,8 @@
     function textoPlano() {
       const plan  = PLANS[selectedPlan];
       const dim   = effectiveDimension();
-      const total = dim * plan.mult;
+      const total = planTotal(selectedPlan, dim);
+      const isMant = selectedPlan === 'mantenimiento' && !!selectedFrequency;
       const dimLine = bothSides
         ? dimension.toLocaleString('es-BO') + ' m² (ambos lados = ' + dim.toLocaleString('es-BO') + ' m²)'
         : dimension.toLocaleString('es-BO') + ' m²';
@@ -2060,7 +2263,7 @@
         'TUM CRISTALES\n' +
         'Cotización de servicio\n' +
         '\n' +
-        'Plan: ' + plan.label + '\n' +
+        'Plan: ' + plan.label + (isMant ? ' (' + MANT_FREQS[selectedFrequency].label + ')' : '') + '\n' +
         'Dimensión: ' + dimLine + '\n' +
         '\n' +
         'Total estimado: ' + fmt(total) + '\n' +
@@ -2108,6 +2311,8 @@
       bothSides = false;
       setBothSides(false);
       selectedPlan = null;
+      selectedFrequency = null;
+      document.querySelectorAll('.freq-chip').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
       updateEffectiveHint();
       updatePrices();
@@ -2134,7 +2339,7 @@
     }
 
     function buildShareUrl() {
-      const data = { p: selectedPlan, d: dimension, b: bothSides ? 1 : 0 };
+      const data = { p: selectedPlan, d: dimension, b: bothSides ? 1 : 0, f: selectedFrequency };
       const encoded = encodeQuoteData(data);
       const url = new URL(window.location.href.split('?')[0]);
       url.searchParams.set('q', encoded);
@@ -2145,10 +2350,20 @@
 
     function capturarCotizacion() {
       if (!selectedPlan || dimension <= 0) { showToast('Completa la cotización primero'); return; }
-      if (typeof html2canvas === 'undefined') { showToast('No se pudo cargar la herramienta de captura'); return; }
 
       const btn = document.getElementById('btnCapture');
       if (btn) btn.disabled = true;
+      showToast('Cargando herramienta de captura…');
+
+      ensureHtml2Canvas().then(() => {
+        _capturarCotizacionInterna(btn);
+      }).catch(() => {
+        if (btn) btn.disabled = false;
+        showToast('No se pudo cargar la herramienta de captura');
+      });
+    }
+
+    function _capturarCotizacionInterna(btn) {
       showToast('Generando imagen…');
 
       const bg = getComputedStyle(document.body).backgroundColor || '#f4f5f7';
@@ -2222,16 +2437,25 @@
 
     function generarQR() {
       if (!selectedPlan || dimension <= 0) { showToast('Completa la cotización primero'); return; }
-      if (typeof QRCode === 'undefined') { showToast('No se pudo cargar el generador de QR'); return; }
 
+      showToast('Generando QR…');
+      ensureQRCode().then(() => {
+        _generarQRInterna();
+      }).catch(() => {
+        showToast('No se pudo cargar el generador de QR');
+      });
+    }
+
+    function _generarQRInterna() {
       const url = buildShareUrl();
       const plan = PLANS[selectedPlan];
       const dim = effectiveDimension();
-      const total = dim * plan.mult;
+      const total = planTotal(selectedPlan, dim);
+      const freqSuffix = (selectedPlan === 'mantenimiento' && selectedFrequency) ? ' · ' + MANT_FREQS[selectedFrequency].label : '';
 
       document.getElementById('qrLinkInput').value = url;
       document.getElementById('qrSummary').innerHTML =
-        'Plan <b>' + plan.label + '</b> · ' + dim.toLocaleString('es-BO') + ' m² · <b>' + fmt(total) + '</b>';
+        'Plan <b>' + plan.label + freqSuffix + '</b> · ' + dim.toLocaleString('es-BO') + ' m² · <b>' + fmt(total) + '</b>';
 
       const box = document.getElementById('qrBox');
       box.innerHTML = '';
@@ -2246,6 +2470,7 @@
 
       document.getElementById('qrOverlay').classList.add('show');
     }
+
 
     function closeQRModal() {
       document.getElementById('qrOverlay').classList.remove('show');
@@ -2281,8 +2506,9 @@
       const url = document.getElementById('qrLinkInput').value;
       const plan = PLANS[selectedPlan];
       const dim = effectiveDimension();
-      const total = dim * plan.mult;
-      const texto = 'Aquí tienes tu presupuesto de TUM CRISTAL: ' + fmt(total) + ' (Plan ' + plan.label + '). Ábrelo aquí:';
+      const total = planTotal(selectedPlan, dim);
+      const planLabel = plan.label + (selectedPlan === 'mantenimiento' && selectedFrequency ? ' ' + MANT_FREQS[selectedFrequency].label : '');
+      const texto = 'Aquí tienes tu presupuesto de TUM CRISTAL: ' + fmt(total) + ' (Plan ' + planLabel + '). Ábrelo aquí:';
       if (navigator.share) {
         navigator.share({ title: 'Presupuesto TUM CRISTAL', text: texto, url: url })
           .catch(() => {});
@@ -2307,6 +2533,13 @@
       dimension = parseFloat(data.d) || 0;
       bothSides = !!data.b;
       setBothSides(bothSides);
+
+      if (data.f && MANT_FREQS[data.f]) {
+        selectedFrequency = data.f;
+        document.querySelectorAll('.freq-chip').forEach(c => {
+          c.classList.toggle('active', c.dataset.freq === data.f);
+        });
+      }
 
       updateEffectiveHint();
       updatePrices();
