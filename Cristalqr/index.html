@@ -1581,7 +1581,7 @@
           </div>
         </div>
 
-        <div class="plan-card" data-plan="mantenimiento" data-mult="20" onclick="selectPlan(this)">
+        <div class="plan-card" data-plan="mantenimiento" data-mult="25" onclick="selectPlan(this)">
           <div class="recommended-badge">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8L5.8 21l1.6-7L2 9.2l7.1-.6L12 2z"/></svg>
             Recomendado
@@ -1734,7 +1734,7 @@
         alertText: 'Pensada para conocer nuestro servicio antes de definir un plan continuo. Tarifa promocional, válida una sola vez por cliente.'
       },
       mantenimiento: {
-        label: 'Servicio periódico', mult: 20, icon: 'ti-tool',
+        label: 'Servicio periódico', mult: 25, icon: 'ti-tool',
         alertIcon: 'i-calendar-check',
         alertTitle: 'Servicio periódico',
         alertText: 'Para negocios que conservan su escaparate impecable mediante visitas programadas. Tarifa vigente bajo contrato o suscripción mensual.'
@@ -2407,21 +2407,11 @@
         useCORS: true
       }).then(canvas => {
         if (cloneEl) cloneEl.remove();
-        canvas.toBlob(async (blob) => {
+        canvas.toBlob((blob) => {
           if (btn) btn.disabled = false;
           if (!blob) { showToast('No se pudo generar la imagen'); return; }
 
           const fileName = 'cotizacion-tumcristal-' + Date.now() + '.png';
-          const file = new File([blob], fileName, { type: 'image/png' });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: 'Cotización TUM CRISTAL' });
-              return;
-            } catch (e) {
-              // El usuario canceló el panel de compartir; seguimos con la descarga.
-            }
-          }
 
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
