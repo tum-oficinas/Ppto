@@ -238,7 +238,6 @@
       -webkit-tap-highlight-color: transparent;
     }
     .measure-remove svg { width: 17px; height: 17px; }
-    .measure-remove:hover { border-color: var(--danger); color: #fff; background: var(--danger); }
     .measure-remove:active { transform: scale(0.94); }
 
     .add-measure-btn {
@@ -260,7 +259,6 @@
       -webkit-tap-highlight-color: transparent;
     }
     .add-measure-btn svg { width: 15px; height: 15px; }
-    .add-measure-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
     .add-measure-btn:active { transform: scale(0.98); }
 
     .measures-total {
@@ -361,7 +359,6 @@
       min-width: 0;
       box-shadow: 0 6px 14px -10px rgba(0,0,0,0.5);
     }
-    .plan-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
     .plan-card:active { transform: scale(0.96); }
 
     /* Zoom unificado al seleccionar: misma fisica en las tres tarjetas,
@@ -585,7 +582,6 @@
       margin-bottom: 10px;
       transition: transform 0.15s, box-shadow 0.15s;
     }
-    .plan-card:hover .plan-icon { transform: translateY(-1px); }
     .plan-icon svg { width: 22px; height: 22px; color: var(--text-secondary); }
 
     /* Íconos temáticos por plan: placa plana con tinte del color propio,
@@ -887,7 +883,6 @@
       white-space: nowrap;
     }
     .result-contact-cta svg { width: 15px; height: 15px; flex-shrink: 0; }
-    .result-contact-cta:hover { text-decoration: underline; }
 
     /* ── Actions ── */
     .actions { display: flex; gap: 10px; margin-bottom: 1.25rem; }
@@ -908,7 +903,6 @@
       transition: background 0.18s ease, transform 0.15s cubic-bezier(.25,.8,.4,1);
       text-decoration: none;
     }
-    .btn:hover { background: var(--input); }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.55; pointer-events: none; }
     .btn svg { width: 16px; height: 16px; }
@@ -927,7 +921,6 @@
       padding: 16px 10px;
       box-shadow: 0 10px 20px -12px rgba(48,209,88,0.35);
     }
-    .btn-capture.btn-capture-client:hover { background: var(--accent-hover); }
     .btn-capture.btn-capture-client svg { width: 18px; height: 18px; }
 
     /* ── Toast ── */
@@ -965,7 +958,6 @@
       color: var(--text-secondary);
       text-decoration: underline;
     }
-    .footer a:hover { color: var(--accent-text); }
 
     @media (max-width: 480px) {
       .plans-grid { grid-template-columns: repeat(6, 1fr); gap: 6px; }
@@ -1259,7 +1251,6 @@
       justify-content: center;
       transition: background 0.18s ease;
     }
-    .btn-small:hover { background: var(--input); }
     .btn-small svg { width: 16px; height: 16px; }
     .qr-actions { display: flex; gap: 8px; width: 100%; }
     .qr-hint {
@@ -1280,6 +1271,29 @@
       stroke-linejoin: round;
       flex-shrink: 0;
     }
+    /* Estados hover agrupados: solo se activan en dispositivos con mouse/trackpad
+       real. En pantallas táctiles esto evita el clásico bug de "doble toque"
+       (el primer tap simula :hover, el segundo recién dispara el click). */
+    @media (hover: hover) and (pointer: fine) {
+      .measure-remove:hover { border-color: var(--danger); color: #fff; background: var(--danger); }
+      .add-measure-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
+      .plan-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+      .plan-card:hover .plan-icon { transform: translateY(-1px); }
+      .result-contact-cta:hover { text-decoration: underline; }
+      .btn:hover { background: var(--input); }
+      .btn-capture.btn-capture-client:hover { background: var(--accent-hover); }
+      .footer a:hover { color: var(--accent-text); }
+      .btn-small:hover { background: var(--input); }
+    }
+    /* Evita que el navegador espere el gesto de doble-toque-para-zoom antes
+       de procesar el tap en elementos interactivos: hace el toque más
+       inmediato en móvil, sin afectar el pinch-zoom general de la página. */
+    .btn, .btn-small, .plan-card, .seg-btn, .offer-toggle-chip, .freq-chip,
+    .measure-remove, .add-measure-btn, .check-dot, .qr-actions .btn-small,
+    .result-contact-cta, .btn-capture-client {
+      touch-action: manipulation;
+    }
+
   </style>
 </head>
 <body>
