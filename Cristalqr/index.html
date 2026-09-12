@@ -1551,9 +1551,6 @@
         <button type="button" class="offer-toggle-chip active" data-plan="mantenimiento" onclick="toggleCardVisibility('mantenimiento')">
           <svg class="icon"><use href="#i-gear"></use></svg> Mantenimiento
         </button>
-        <button type="button" class="offer-toggle-chip" data-plan="critico" onclick="toggleCardVisibility('critico')">
-          <svg class="icon"><use href="#i-shield-alert"></use></svg> Intensivo
-        </button>
       </div>
       <div class="plans-grid" id="plansGrid">
 
@@ -1755,11 +1752,12 @@
     let isClientView = false;
     let clientType = 'nuevo';
 
-    // Los 2 planes que se pueden activar/desactivar entre sí, según el tipo
+    // Los planes que se pueden activar/desactivar entre sí, según el tipo
     // de cliente: nuevo compara Intensivo vs. Oferta inicial; recurrente
-    // compara Mantenimiento (recomendado) vs. Intensivo (precio real).
+    // solo tiene Mantenimiento (Intensivo no se ofrece ni es accesible
+    // desde esta vista).
     function getTogglePlans() {
-      return clientType === 'nuevo' ? ['critico', 'inicial'] : ['mantenimiento', 'critico'];
+      return clientType === 'nuevo' ? ['critico', 'inicial'] : ['mantenimiento'];
     }
 
     /* ══════════ Tipo de cliente (reordena y resalta los planes) ══════════ */
@@ -1779,9 +1777,8 @@
         setCardHidden('critico', false);
         setCardHidden('inicial', true);
       } else {
-        // Estado inicial de cliente recurrente: solo Mantenimiento a la
-        // vista (es lo recomendado); Intensivo se activa si el cliente
-        // quiere comparar contra el precio real.
+        // Estado de cliente recurrente: únicamente se ofrece Mantenimiento.
+        // Intensivo queda fuera de esta vista, sin forma de activarlo.
         setCardHidden('mantenimiento', false);
         setCardHidden('critico', true);
       }
