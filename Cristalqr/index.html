@@ -21,14 +21,14 @@
       --text-primary: #F5F5F7;
       --text-secondary: #A1A1A8;
       --text-muted: #6E6E75;
-      --accent: #8ED9A0;
-      --accent-ink: #0D140F;
-      --accent-bg: rgba(142,217,160,0.07);
-      --accent-text: #8ED9A0;
-      --accent-hover: #A8E6B7;
+      --accent: #30D158;
+      --accent-ink: #04150A;
+      --accent-bg: rgba(48,209,88,0.07);
+      --accent-text: #30D158;
+      --accent-hover: #63DE84;
       --radius: 16px;
-      --success: #8ED9A0;
-      --success-bg: rgba(142,217,160,0.07);
+      --success: #30D158;
+      --success-bg: rgba(48,209,88,0.07);
       --danger: #FF6B62;
     }
 
@@ -145,7 +145,7 @@
     }
     .dim-input-wrap input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(142,217,160,0.15);
+      box-shadow: 0 0 0 3px rgba(48,209,88,0.15);
       background: var(--surface);
     }
     .dim-input-wrap input::placeholder { color: var(--text-muted); font-weight: 600; }
@@ -315,8 +315,8 @@
       align-items: center;
       padding: 5px 11px;
       border-radius: 999px;
-      background: rgba(142,217,160,0.10);
-      border: 1px solid rgba(142,217,160,0.3);
+      background: rgba(48,209,88,0.10);
+      border: 1px solid rgba(48,209,88,0.3);
       font-size: 13px;
       font-weight: 600;
       color: var(--accent-text);
@@ -377,8 +377,8 @@
       transform: scale(1.05) translateY(-2px);
       z-index: 5;
       box-shadow:
-        0 0 0 1px rgba(142,217,160,0.15),
-        0 14px 24px -16px rgba(142,217,160,0.3);
+        0 0 0 1px rgba(48,209,88,0.15),
+        0 14px 24px -16px rgba(48,209,88,0.3);
     }
 
     /* Jerarquia visual destacada: qué tarjeta se resalta depende del tipo de
@@ -387,9 +387,9 @@
        Cliente recurrente -> se resalta Mantenimiento (es lo recomendado). */
     #plansGrid.client-recurring .plan-card[data-plan="mantenimiento"],
     #plansGrid.client-new .plan-card[data-plan="inicial"] {
-      border: 1.5px solid rgba(142,217,160,0.5);
+      border: 1.5px solid rgba(48,209,88,0.5);
       background: var(--surface);
-      box-shadow: 0 10px 20px -16px rgba(142,217,160,0.25);
+      box-shadow: 0 10px 20px -16px rgba(48,209,88,0.25);
       z-index: 1;
     }
     .plan-card[data-plan="mantenimiento"].selected,
@@ -597,7 +597,7 @@
        sin anillos ni bordes, glifo a color pleno. */
     .plan-card[data-plan="inicial"] .plan-icon { background: rgba(100,170,255,0.12); }
     .plan-card[data-plan="inicial"] .plan-icon svg { color: #6AAFFF; }
-    .plan-card[data-plan="mantenimiento"] .plan-icon { background: rgba(142,217,160,0.12); }
+    .plan-card[data-plan="mantenimiento"] .plan-icon { background: rgba(48,209,88,0.12); }
     .plan-card[data-plan="mantenimiento"] .plan-icon svg { color: var(--accent); }
     .plan-card[data-plan="critico"] .plan-icon { background: rgba(255,107,98,0.12); }
     .plan-card[data-plan="critico"] .plan-icon svg { color: var(--danger); }
@@ -832,7 +832,7 @@
     .promo-alert-text { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
 
     .promo-alert.mantenimiento {
-      background: rgba(142,217,160,0.08);
+      background: rgba(48,209,88,0.08);
       border-left-color: var(--accent);
     }
     .promo-alert.mantenimiento svg,
@@ -930,7 +930,7 @@
       font-size: 15px;
       font-weight: 700;
       padding: 16px 10px;
-      box-shadow: 0 10px 20px -12px rgba(142,217,160,0.35);
+      box-shadow: 0 10px 20px -12px rgba(48,209,88,0.35);
     }
     .btn-capture.btn-capture-client:hover { background: var(--accent-hover); }
     .btn-capture.btn-capture-client svg { width: 18px; height: 18px; }
