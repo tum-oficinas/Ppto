@@ -21,14 +21,14 @@
       --text-primary: #F5F5F7;
       --text-secondary: #A1A1A8;
       --text-muted: #6E6E75;
-      --accent: #C9FF4D;
-      --accent-ink: #0A0B08;
-      --accent-bg: rgba(201,255,77,0.07);
-      --accent-text: #C9FF4D;
-      --accent-hover: #D8FF75;
+      --accent: #8ED9A0;
+      --accent-ink: #0D140F;
+      --accent-bg: rgba(142,217,160,0.07);
+      --accent-text: #8ED9A0;
+      --accent-hover: #A8E6B7;
       --radius: 16px;
-      --success: #C9FF4D;
-      --success-bg: rgba(201,255,77,0.07);
+      --success: #8ED9A0;
+      --success-bg: rgba(142,217,160,0.07);
       --danger: #FF6B62;
     }
 
@@ -112,8 +112,8 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 1.25rem 1.25rem;
-      margin-bottom: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
     }
 
     /* ── Input ── */
@@ -145,7 +145,7 @@
     }
     .dim-input-wrap input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(201,255,77,0.15);
+      box-shadow: 0 0 0 3px rgba(142,217,160,0.15);
       background: var(--surface);
     }
     .dim-input-wrap input::placeholder { color: var(--text-muted); font-weight: 600; }
@@ -315,8 +315,8 @@
       align-items: center;
       padding: 5px 11px;
       border-radius: 999px;
-      background: rgba(201,255,77,0.10);
-      border: 1px solid rgba(201,255,77,0.3);
+      background: rgba(142,217,160,0.10);
+      border: 1px solid rgba(142,217,160,0.3);
       font-size: 13px;
       font-weight: 600;
       color: var(--accent-text);
@@ -377,8 +377,8 @@
       transform: scale(1.05) translateY(-2px);
       z-index: 5;
       box-shadow:
-        0 0 0 1px rgba(201,255,77,0.15),
-        0 14px 24px -16px rgba(201,255,77,0.3);
+        0 0 0 1px rgba(142,217,160,0.15),
+        0 14px 24px -16px rgba(142,217,160,0.3);
     }
 
     /* Jerarquia visual destacada: qué tarjeta se resalta depende del tipo de
@@ -387,9 +387,9 @@
        Cliente recurrente -> se resalta Mantenimiento (es lo recomendado). */
     #plansGrid.client-recurring .plan-card[data-plan="mantenimiento"],
     #plansGrid.client-new .plan-card[data-plan="inicial"] {
-      border: 1.5px solid rgba(201,255,77,0.5);
+      border: 1.5px solid rgba(142,217,160,0.5);
       background: var(--surface);
-      box-shadow: 0 10px 20px -16px rgba(201,255,77,0.25);
+      box-shadow: 0 10px 20px -16px rgba(142,217,160,0.25);
       z-index: 1;
     }
     .plan-card[data-plan="mantenimiento"].selected,
@@ -583,7 +583,7 @@
       height: 48px;
       border-radius: 14px;
       background: var(--surface-2);
-      border: 1px solid var(--border);
+      border: none;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -591,20 +591,15 @@
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .plan-card:hover .plan-icon { transform: translateY(-1px); }
-    .plan-icon svg { width: 24px; height: 24px; color: var(--text-secondary); }
+    .plan-icon svg { width: 22px; height: 22px; color: var(--text-secondary); }
 
-    /* Íconos temáticos por plan: acento de color propio, discreto y limpio */
-    .plan-card[data-plan="inicial"] .plan-icon {
-      border-color: rgba(100,170,255,0.3);
-    }
+    /* Íconos temáticos por plan: placa plana con tinte del color propio,
+       sin anillos ni bordes, glifo a color pleno. */
+    .plan-card[data-plan="inicial"] .plan-icon { background: rgba(100,170,255,0.12); }
     .plan-card[data-plan="inicial"] .plan-icon svg { color: #6AAFFF; }
-    .plan-card[data-plan="mantenimiento"] .plan-icon {
-      border-color: rgba(201,255,77,0.35);
-    }
+    .plan-card[data-plan="mantenimiento"] .plan-icon { background: rgba(142,217,160,0.12); }
     .plan-card[data-plan="mantenimiento"] .plan-icon svg { color: var(--accent); }
-    .plan-card[data-plan="critico"] .plan-icon {
-      border-color: rgba(255,107,98,0.3);
-    }
+    .plan-card[data-plan="critico"] .plan-icon { background: rgba(255,107,98,0.12); }
     .plan-card[data-plan="critico"] .plan-icon svg { color: var(--danger); }
 
     .plan-card.selected .plan-icon {
@@ -837,7 +832,7 @@
     .promo-alert-text { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
 
     .promo-alert.mantenimiento {
-      background: rgba(201,255,77,0.08);
+      background: rgba(142,217,160,0.08);
       border-left-color: var(--accent);
     }
     .promo-alert.mantenimiento svg,
@@ -900,7 +895,7 @@
     .result-contact-cta:hover { text-decoration: underline; }
 
     /* ── Actions ── */
-    .actions { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .actions { display: flex; gap: 10px; margin-bottom: 1.25rem; }
     .btn {
       flex: 1;
       display: flex;
@@ -909,16 +904,16 @@
       gap: 7px;
       font-size: 13px;
       font-weight: 500;
-      padding: 10px 10px;
+      padding: 11px 10px;
       border-radius: var(--radius);
       cursor: pointer;
-      border: 1px solid var(--border-strong);
-      background: var(--surface);
+      border: none;
+      background: var(--surface-2);
       color: var(--text-primary);
       transition: background 0.18s ease, transform 0.15s cubic-bezier(.25,.8,.4,1);
       text-decoration: none;
     }
-    .btn:hover { background: var(--surface-2); }
+    .btn:hover { background: var(--input); }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.55; pointer-events: none; }
     .btn svg { width: 16px; height: 16px; }
@@ -931,11 +926,11 @@
     .btn-capture.btn-capture-client {
       flex: 1 1 100%;
       background: var(--accent);
-      border-color: var(--accent);
       color: var(--accent-ink);
       font-size: 15px;
       font-weight: 700;
-      padding: 15px 10px;
+      padding: 16px 10px;
+      box-shadow: 0 10px 20px -12px rgba(142,217,160,0.35);
     }
     .btn-capture.btn-capture-client:hover { background: var(--accent-hover); }
     .btn-capture.btn-capture-client svg { width: 18px; height: 18px; }
@@ -1260,14 +1255,16 @@
       height: 38px;
       flex-shrink: 0;
       border-radius: var(--radius);
-      border: 1px solid var(--border-strong);
+      border: none;
       background: var(--surface-2);
       color: var(--text-primary);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background 0.18s ease;
     }
+    .btn-small:hover { background: var(--input); }
     .btn-small svg { width: 16px; height: 16px; }
     .qr-actions { display: flex; gap: 8px; width: 100%; }
     .qr-hint {
