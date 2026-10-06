@@ -242,6 +242,31 @@
     }
     .seg-btn.active .seg-check { display: inline-block; }
 
+    /* ── Servicio de restauración (monto fijo en Bs + interruptor) ── */
+    .rest-box { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .rest-toggle {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-top: 12px; padding: 12px 14px;
+      border: 1.5px solid var(--border-strong); border-radius: 12px;
+      background: var(--surface-2); color: var(--text-secondary);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; user-select: none;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .rest-toggle.on { border-color: var(--accent); background: var(--accent-bg); color: var(--text-primary); }
+    .rest-switch {
+      position: relative; width: 42px; height: 24px; flex-shrink: 0;
+      border-radius: 999px; background: var(--input); border: 1px solid var(--border-strong);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .rest-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+      border-radius: 50%; background: var(--text-muted);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .rest-toggle.on .rest-switch { background: var(--accent); border-color: var(--accent); }
+    .rest-toggle.on .rest-switch::after { transform: translateX(18px); background: var(--accent-ink); }
+
     .dim-effective-hint {
       margin-top: 8px;
       font-size: 12px;
@@ -1912,6 +1937,21 @@
         <svg class="icon"><use href="#i-calculator"></use></svg>
         <span id="dimEffectiveText">—</span>
       </div>
+
+      <!-- Servicio de restauración: valor fijo en Bs que escribe el vendedor -->
+      <div class="rest-box">
+        <div class="field-label">
+          <svg class="icon"><use href="#i-tool"></use></svg> Servicio de restauración (opcional)
+        </div>
+        <div class="dim-input-wrap">
+          <input type="text" id="restInput" inputmode="decimal" placeholder="0" oninput="onRestInput()" />
+          <span class="dim-unit">Bs</span>
+        </div>
+        <div class="rest-toggle" id="restToggle" onclick="toggleRest()" role="switch" aria-checked="false">
+          <span>Mostrar con restauración</span>
+          <span class="rest-switch"></span>
+        </div>
+      </div>
     </div>
 
     <!-- Planes -->
@@ -2019,6 +2059,14 @@
         <div class="result-row">
           <span class="rl"><svg class="icon"><use href="#i-ruler"></use></svg> Dimensión</span>
           <span class="rv" id="resDim">—</span>
+        </div>
+        <div class="result-row" id="resRowPlan" style="display:none;">
+          <span class="rl"><svg class="icon"><use href="#i-droplet"></use></svg> <span id="resPlanLabel">Limpieza</span></span>
+          <span class="rv" id="resPlanAmount">—</span>
+        </div>
+        <div class="result-row" id="resRowRest" style="display:none;">
+          <span class="rl"><svg class="icon"><use href="#i-tool"></use></svg> Servicio de restauración</span>
+          <span class="rv" id="resRest">—</span>
         </div>
         <div class="promo-alert" id="promoAlert" style="display:none;">
           <svg class="icon" id="promoAlertIcon"><use href="#i-alert-triangle"></use></svg>
@@ -2159,6 +2207,9 @@
     let bothSides = false;
     let isClientView = false;
     let clientType = 'nuevo';
+    // Servicio de restauración: monto fijo en Bs y si se incluye en el presupuesto
+    let restauracion = 0;
+    let conRestauracion = false;
 
     // Los planes que se pueden activar/desactivar entre sí, según el tipo
     // de cliente: nuevo compara Intensivo vs. Oferta inicial; recurrente
@@ -2413,6 +2464,55 @@
       return dimension * (bothSides ? 2 : 1);
     }
 
+    /* ══════════ Servicio de restauración ══════════
+       Monto fijo en Bs (no depende de los m²). Con el interruptor activo se
+       suma al plan; apagado, solo se muestra el costo del plan (1 cara / ambos lados). */
+    function restActiva() { return conRestauracion && restauracion > 0; }
+    function restExtra() { return restActiva() ? restauracion : 0; }
+    function totalConRestauracion(planKey, dim) { return planTotal(planKey, dim) + restExtra(); }
+
+    function pintarRestToggle() {
+      const t = document.getElementById('restToggle');
+      t.classList.toggle('on', conRestauracion);
+      t.setAttribute('aria-checked', conRestauracion ? 'true' : 'false');
+    }
+
+    function onRestInput() {
+      const inp = document.getElementById('restInput');
+      let v = inp.value.replace(',', '.').replace(/[^0-9.]/g, '');
+      const p = v.indexOf('.');
+      if (p !== -1) v = v.slice(0, p + 1) + v.slice(p + 1).replace(/\./g, '');
+      if (v !== inp.value) inp.value = v;
+      const antes = restauracion;
+      restauracion = parseFloat(v) > 0 ? parseFloat(v) : 0;
+      // La primera vez que se escribe un monto se activa solo; se apaga con el interruptor
+      if (antes <= 0 && restauracion > 0) conRestauracion = true;
+      pintarRestToggle();
+      updateResult();
+    }
+
+    function setRest(on) {
+      conRestauracion = !!on;
+      pintarRestToggle();
+      updateResult();
+    }
+
+    function toggleRest() {
+      if (!conRestauracion && !(restauracion > 0)) {
+        showToast('Escribe primero el valor en Bs');
+        document.getElementById('restInput').focus();
+        return;
+      }
+      setRest(!conRestauracion);
+    }
+
+    function resetRest() {
+      restauracion = 0;
+      conRestauracion = false;
+      document.getElementById('restInput').value = '';
+      pintarRestToggle();
+    }
+
     /* ══════════ Carga perezosa de librerías externas ══════════
        QRCode.js y html2canvas solo se descargan la primera vez que el
        vendedor realmente usa "Generar QR" o "Capturar imagen", en vez de
@@ -2647,7 +2747,9 @@
       if (dimension > 0 && selectedPlan) {
         const plan  = PLANS[selectedPlan];
         const dim   = effectiveDimension();
-        const total = planTotal(selectedPlan, dim);
+        const base  = planTotal(selectedPlan, dim);
+        const rest  = restExtra();
+        const total = base + rest;
 
         document.getElementById('resBadge').textContent   = 'Plan ' + plan.label
           + (selectedPlan === 'mantenimiento' && selectedFrequency ? ' · ' + MANT_FREQS[selectedFrequency].label : '');
@@ -2655,6 +2757,15 @@
           ? dimension.toLocaleString('es-BO') + ' m² × 2 = ' + dim.toLocaleString('es-BO') + ' m²'
           : dimension.toLocaleString('es-BO') + ' m²';
         document.getElementById('resTotal').textContent    = fmt(total);
+
+        // Con restauración activa se desglosa: plan + restauración = total
+        document.getElementById('resRowPlan').style.display = rest > 0 ? '' : 'none';
+        document.getElementById('resRowRest').style.display = rest > 0 ? '' : 'none';
+        if (rest > 0) {
+          document.getElementById('resPlanLabel').textContent  = plan.label;
+          document.getElementById('resPlanAmount').textContent = fmt(base);
+          document.getElementById('resRest').textContent       = fmt(rest);
+        }
 
         promoAlert.className = 'promo-alert' + (selectedPlan !== 'inicial' ? ' ' + selectedPlan : '');
         promoAlert.style.display = 'flex';
@@ -2673,7 +2784,9 @@
     function textoPlano() {
       const plan  = PLANS[selectedPlan];
       const dim   = effectiveDimension();
-      const total = planTotal(selectedPlan, dim);
+      const base  = planTotal(selectedPlan, dim);
+      const rest  = restExtra();
+      const total = base + rest;
       const isMant = selectedPlan === 'mantenimiento' && !!selectedFrequency;
       const dimLine = bothSides
         ? dimension.toLocaleString('es-BO') + ' m² (ambos lados = ' + dim.toLocaleString('es-BO') + ' m²)'
@@ -2685,6 +2798,7 @@
         '\n' +
         'Plan: ' + plan.label + (isMant ? ' (' + MANT_FREQS[selectedFrequency].label + ')' : '') + '\n' +
         'Dimensión: ' + dimLine + '\n' +
+        (rest > 0 ? plan.label + ': ' + fmt(base) + '\n' + 'Servicio de restauración: ' + fmt(rest) + '\n' : '') +
         '\n' +
         'Total estimado: ' + fmt(total) + '\n' +
         '\n' +
@@ -2734,6 +2848,7 @@
       setBothSides(false);
       selectedPlan = null;
       selectedFrequency = null;
+      resetRest();
       document.querySelectorAll('.freq-chip').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
       updateEffectiveHint();
@@ -2838,7 +2953,7 @@
 
       const plan = PLANS[selectedPlan];
       const dim = effectiveDimension();
-      const total = planTotal(selectedPlan, dim);
+      const total = totalConRestauracion(selectedPlan, dim);
       const negocioNombre = (document.getElementById('negocioNombre').value || '').trim();
       const negocioDescripcion = (document.getElementById('negocioDescripcion').value || '').trim();
 
@@ -2853,6 +2968,8 @@
         frequency: selectedFrequency,
         frequencyLabel: (selectedPlan === 'mantenimiento' && selectedFrequency && MANT_FREQS[selectedFrequency]) ? MANT_FREQS[selectedFrequency].label : null,
         total: total,
+        restauracion: restauracion,
+        conRestauracion: conRestauracion,
         vista: capturarVistaPlanes()
       };
 
@@ -3108,7 +3225,8 @@
             '<div class="saved-item-date">' + formatFechaGuardado(r.fecha) + '</div>' +
             '<div class="saved-item-total">' + fmt(r.total) + '</div>' +
           '</div>' +
-          '<div class="saved-item-meta">Plan ' + escapeHtml(r.planLabel) + freqSuffix + ' · ' + dimLine + '</div>' +
+          '<div class="saved-item-meta">Plan ' + escapeHtml(r.planLabel) + freqSuffix + ' · ' + dimLine +
+            ((r.conRestauracion && r.restauracion > 0) ? ' · + restauración ' + fmt(r.restauracion) : '') + '</div>' +
           (r.descripcion ? '<div class="saved-item-desc">' + escapeHtml(r.descripcion) + '</div>' : '') +
           '<div class="saved-item-actions">' +
             '<button type="button" class="btn-load" onclick="cargarPresupuestoGuardado(' + r.id + ')"><svg class="icon"><use href="#i-refresh"></use></svg> Cargar</button>' +
@@ -3151,6 +3269,10 @@
         setCardHidden('inicial', vista.visiblePlans.inicial === false);
       }
 
+      restauracion = record.restauracion > 0 ? record.restauracion : 0;
+      document.getElementById('restInput').value = restauracion > 0 ? String(restauracion) : '';
+      setRest(!!record.conRestauracion);
+
       selectPlanByKey(record.plan);
       cerrarPresupuestosOverlay();
 
@@ -3179,6 +3301,7 @@
     // guardado en IndexedDB, sin necesitar cargarlo primero en el formulario.
     function buildShareUrlFromRecord(record) {
       const data = { p: record.plan, d: record.dimension, b: record.bothSides ? 1 : 0, f: record.frequency };
+      if (record.conRestauracion && record.restauracion > 0) data.r = record.restauracion;
       const encoded = encodeQuoteData(data);
       const url = new URL(window.location.href.split('?')[0]);
       url.searchParams.set('q', encoded);
@@ -3211,7 +3334,8 @@
 
       document.getElementById('qrLinkInput').value = url;
       document.getElementById('qrSummary').innerHTML =
-        'Plan <b>' + escapeHtml(record.planLabel) + freqSuffix + '</b> · ' + dimLine + ' · <b>' + fmt(record.total) + '</b>';
+        'Plan <b>' + escapeHtml(record.planLabel) + freqSuffix + '</b> · ' + dimLine + ' · <b>' + fmt(record.total) + '</b>' +
+        ((record.conRestauracion && record.restauracion > 0) ? ' · incl. restauración ' + fmt(record.restauracion) : '');
 
       const box = document.getElementById('qrBox');
       box.innerHTML = '';
@@ -3241,6 +3365,7 @@
 
     function buildShareUrl() {
       const data = { p: selectedPlan, d: dimension, b: bothSides ? 1 : 0, f: selectedFrequency };
+      if (restActiva()) data.r = restauracion;   // solo viaja si se incluye en el presupuesto
       const encoded = encodeQuoteData(data);
       const url = new URL(window.location.href.split('?')[0]);
       url.searchParams.set('q', encoded);
@@ -3341,12 +3466,13 @@
       const url = buildShareUrl();
       const plan = PLANS[selectedPlan];
       const dim = effectiveDimension();
-      const total = planTotal(selectedPlan, dim);
+      const total = totalConRestauracion(selectedPlan, dim);
+      const restTxt = restActiva() ? ' · incl. restauración ' + fmt(restauracion) : '';
       const freqSuffix = (selectedPlan === 'mantenimiento' && selectedFrequency) ? ' · ' + MANT_FREQS[selectedFrequency].label : '';
 
       document.getElementById('qrLinkInput').value = url;
       document.getElementById('qrSummary').innerHTML =
-        'Plan <b>' + plan.label + freqSuffix + '</b> · ' + dim.toLocaleString('es-BO') + ' m² · <b>' + fmt(total) + '</b>';
+        'Plan <b>' + plan.label + freqSuffix + '</b> · ' + dim.toLocaleString('es-BO') + ' m² · <b>' + fmt(total) + '</b>' + restTxt;
 
       const box = document.getElementById('qrBox');
       box.innerHTML = '';
@@ -3397,9 +3523,9 @@
       const url = document.getElementById('qrLinkInput').value;
       const plan = PLANS[selectedPlan];
       const dim = effectiveDimension();
-      const total = planTotal(selectedPlan, dim);
+      const total = totalConRestauracion(selectedPlan, dim);
       const planLabel = plan.label + (selectedPlan === 'mantenimiento' && selectedFrequency ? ' ' + MANT_FREQS[selectedFrequency].label : '');
-      const texto = 'Aquí tienes tu presupuesto de TUM CRISTAL: ' + fmt(total) + ' (Plan ' + planLabel + '). Ábrelo aquí:';
+      const texto = 'Aquí tienes tu presupuesto de TUM CRISTAL: ' + fmt(total) + ' (Plan ' + planLabel + (restActiva() ? ' + restauración' : '') + '). Ábrelo aquí:';
       if (navigator.share) {
         navigator.share({ title: 'Presupuesto TUM CRISTAL', text: texto, url: url })
           .catch(() => {});
@@ -3424,6 +3550,10 @@
       dimension = parseFloat(data.d) || 0;
       bothSides = !!data.b;
       setBothSides(bothSides);
+
+      // Servicio de restauración (si el vendedor lo incluyó en el link)
+      const rVal = parseFloat(data.r);
+      if (rVal > 0) { restauracion = rVal; conRestauracion = true; }
 
       if (data.f && MANT_FREQS[data.f]) {
         selectedFrequency = data.f;
