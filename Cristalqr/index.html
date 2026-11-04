@@ -1972,7 +1972,7 @@
       </div>
       <div class="plans-grid" id="plansGrid">
 
-        <div class="plan-card" data-plan="inicial" data-mult="15" onclick="selectPlan(this)">
+        <div class="plan-card" data-plan="inicial" data-mult="13" onclick="selectPlan(this)">
           <div class="first-time-badge">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8L5.8 21l1.6-7L2 9.2l7.1-.6L12 2z"/></svg>
             Oferta primera vez
@@ -1989,7 +1989,7 @@
           </div>
         </div>
 
-        <div class="plan-card" data-plan="mantenimiento" data-mult="20" onclick="selectPlan(this)">
+        <div class="plan-card" data-plan="mantenimiento" data-mult="15" onclick="selectPlan(this)">
           <div class="recommended-badge">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8L5.8 21l1.6-7L2 9.2l7.1-.6L12 2z"/></svg>
             Recomendado
@@ -2031,7 +2031,7 @@
           </div>
         </div>
 
-        <div class="plan-card" data-plan="critico" data-mult="30" onclick="selectPlan(this)">
+        <div class="plan-card" data-plan="critico" data-mult="25" onclick="selectPlan(this)">
           <div class="check-dot"><svg class="icon"><use href="#i-check"></use></svg></div>
           <div class="plan-icon"><svg class="icon"><use href="#i-shield-alert"></use></svg></div>
           <div class="plan-name">Intensivo</div>
@@ -2174,19 +2174,19 @@
   <script>
     const PLANS = {
       inicial:       {
-        label: 'Primera limpieza', mult: 15, icon: 'ti-seedling',
+        label: 'Primera limpieza', mult: 13, icon: 'ti-seedling',
         alertIcon: 'i-alert-triangle',
         alertTitle: 'Primera limpieza',
         alertText: 'Pensada para conocer nuestro servicio antes de definir un plan continuo. Tarifa promocional, válida una sola vez por cliente.'
       },
       mantenimiento: {
-        label: 'Servicio periódico', mult: 20, icon: 'ti-tool',
+        label: 'Servicio periódico', mult: 15, icon: 'ti-tool',
         alertIcon: 'i-calendar-check',
         alertTitle: 'Servicio periódico',
         alertText: 'Para negocios que conservan su escaparate impecable mediante visitas programadas. Tarifa vigente bajo contrato o suscripción mensual.'
       },
       critico:       {
-        label: 'Intensivo', mult: 30, icon: 'ti-shield-check',
+        label: 'Intensivo', mult: 25, icon: 'ti-shield-check',
         alertIcon: 'i-alert-octagon',
         alertTitle: 'Limpieza sin mantenimiento previo',
         alertText: 'Para escaparates que no cuentan con una rutina periódica. Requiere mayor tiempo de trabajo por la suciedad acumulada.'
@@ -2714,7 +2714,7 @@
           }
 
           // Comparación vs. Inicial: solo es una ganancia real cuando el precio
-          // de Inicial en pantalla corresponde a "ambos lados" (dim*2*20), ya
+          // de Inicial en pantalla corresponde a "ambos lados" (dim*2*13), ya
           // que en modo "1 lado" Inicial sale más barato que la suscripción.
           const savingsInicial = document.getElementById('price-mantenimiento-savings-inicial');
           if (savingsInicial) {
@@ -3541,8 +3541,31 @@
       if (card) selectPlan(card);
     }
 
+    // Precios que vienen dentro del QR (los manda la app): multiplicadores por
+    // plan (data.m) y descuentos por frecuencia (data.fr). Si el QR es antiguo y
+    // no los trae, se usan los valores por defecto de PLANS / MANT_FREQS.
+    function aplicarPreciosDelLink(data) {
+      if (data.m && typeof data.m === 'object') {
+        Object.keys(PLANS).forEach(k => {
+          const v = Number(data.m[k]);
+          if (isFinite(v) && v > 0) PLANS[k].mult = v;
+        });
+      }
+      if (data.fr && typeof data.fr === 'object') {
+        Object.keys(MANT_FREQS).forEach(k => {
+          const v = Number(data.fr[k]);
+          if (isFinite(v) && v >= 0 && v < 1) {
+            MANT_FREQS[k].discount = v;
+            const chip = document.querySelector('.freq-chip[data-freq="' + k + '"] .freq-discount');
+            if (chip) chip.textContent = '-' + Math.round(v * 100) + '%';
+          }
+        });
+      }
+    }
+
     function activarVistaCliente(data) {
       isClientView = true;
+      aplicarPreciosDelLink(data);
 
       measuresList.innerHTML = '';
       measuresList.appendChild(createMeasureRow(data.d));
